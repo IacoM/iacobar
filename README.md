@@ -2,6 +2,15 @@
 
 **A modern, lightweight taskbar for Windows 11.**
 
+![The floating bar: music, CPU/RAM, dock and system islands](docs/screenshots/bar.jpg)
+
+<p align="center">
+  <img src="docs/screenshots/start.jpg" alt="Start: search, pinned and all apps" width="56%">
+  <img src="docs/screenshots/quick-panel.jpg" alt="Quick panel: media, Wi-Fi, Bluetooth, volume mixer" width="39%">
+</p>
+
+<sub>Screenshots with sample data: the letters stand in for the real app icons.</sub>
+
 Iacobar replaces the Windows taskbar **without removing it**: on start it hides
 the native taskbar, and when you quit it gives it back exactly as it was.
 
@@ -109,7 +118,7 @@ npm run dev            # UI only, in the browser, with mock data
 
 In the browser you can open the panels directly, e.g.
 `http://127.0.0.1:1420/flyout?panel=start` (or `calendar`, `audio`, `group`,
-`settings`, `tray`). Useful URL flags: `?floating`, `?apps=20`, `?theme=oceano`.
+`settings`, `tray`). Useful URL flags: `?floating`, `?apps=20`, `?theme=oceano`, `?update`.
 
 To keep the Windows taskbar visible while developing:
 
