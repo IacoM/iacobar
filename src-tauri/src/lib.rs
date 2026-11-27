@@ -14,6 +14,7 @@ mod system;
 mod taskbar;
 mod tray;
 mod tray_orphans;
+mod updater;
 mod vdesk;
 mod wifi;
 mod wallpaper;
@@ -33,7 +34,7 @@ const FLYOUT_GAP: f64 = 6.0;
 
 // ---------------------------------------------------------------- cleanup --
 
-fn cleanup() {
+pub(crate) fn cleanup() {
     tray::stop(); // tray icons go back to Explorer
     bars::release_all();
     taskbar::restore();
@@ -601,6 +602,23 @@ fn log_js(window: tauri::Window, msg: String) {
     eprintln!("[js:{}] {}", window.label(), msg);
 }
 
+// ---------------------------------------------------------------- updates --
+
+#[tauri::command]
+fn update_status(app: AppHandle) -> updater::UpdateStatus {
+    updater::status(&app)
+}
+
+#[tauri::command]
+async fn check_update(app: AppHandle) -> Result<updater::UpdateStatus, String> {
+    updater::check(&app).await
+}
+
+#[tauri::command]
+async fn install_update(app: AppHandle) -> Result<(), String> {
+    updater::install(&app).await
+}
+
 #[tauri::command]
 fn quit_app(app: AppHandle) {
     cleanup();
@@ -621,6 +639,7 @@ pub fn run() {
     install_safety_nets();
 
     let app = tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             show_flyout,
             fit_flyout,
@@ -670,6 +689,9 @@ pub fn run() {
             set_radio,
             tray_icons,
             tray_click,
+            update_status,
+            check_update,
+            install_update,
         ])
         .setup(|app| {
             // Hide the native taskbar(s), then one floating bar per monitor.
@@ -682,6 +704,7 @@ pub fn run() {
             tray::start(app.handle().clone());
             wins::start(app.handle().clone());
             vdesk::start(app.handle().clone());
+            updater::start(app.handle().clone());
             // Pre-load the launcher's app list in the background.
             std::thread::spawn(|| {
                 apps::list();

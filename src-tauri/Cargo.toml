@@ -1,6 +1,6 @@
 [package]
 name = "iacobar"
-version = "0.1.0"
+version = "0.2.0"
 description = "A modern, customizable taskbar for Windows"
 license = "MIT"
 edition = "2024"
@@ -21,6 +21,7 @@ png = "0.17"
 base64 = "0.22"
 # same version the `windows` crate uses: needed by its #[interface] macro
 windows-core = "0.61"
+tauri-plugin-updater = "2"
 
 [dependencies.windows]
 version = "0.61"

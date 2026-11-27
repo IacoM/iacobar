@@ -6,7 +6,7 @@ Iacobar replaces the Windows taskbar **without removing it**: on start it hides
 the native taskbar, and when you quit it gives it back exactly as it was.
 
 Built with [Tauri 2](https://tauri.app) (Rust + Win32) and [Svelte 5](https://svelte.dev).
-The installer is about 1.5 MB and the bar idles at well under 1% CPU.
+The installer is about 2.5 MB and the bar idles at well under 1% CPU.
 The user interface is currently in Italian.
 
 > Iacobar is an independent project. It is not affiliated with, endorsed by or
@@ -54,8 +54,10 @@ The user interface is currently in Italian.
 - Accent colour from Windows, from the theme or picked freely.
 - Icon size, island corners and a reduced-motion mode.
 
-**Safety**
+**Safety and updates**
 - Automatic backups of your settings, export and import to a file.
+- Automatic updates: a dot on Start tells you when a new version is out, and
+  one click in the bar settings installs it and restarts the bar.
 
 ## Install
 
@@ -69,6 +71,11 @@ Windows by default (you can turn this off in the settings).
 > *More info → Run anyway*. On PCs with Smart App Control turned on, unsigned
 > apps cannot run at all.
 
+From version 0.2.0 on, Iacobar updates itself: when a new release is out a dot
+appears on the Start button, and *Start → bar settings → Updates → Update now*
+downloads it, installs it and restarts the bar. Version 0.1.0 has no updater:
+if you have it, install 0.2.0 by hand once.
+
 Uninstalling from *Settings → Apps* gives the Windows taskbar back and removes
 the autostart entry.
 
@@ -81,8 +88,10 @@ the autostart entry.
 
 ## Privacy
 
-Iacobar works entirely on your PC and sends nothing over the network. To work
-it reads, locally: your open windows, installed apps, the current media session,
+Iacobar works on your PC and sends no data about you anywhere. The only network
+access is the update check: a few seconds after start and then every 6 hours it
+downloads `latest.json` from this repository's GitHub releases (and, when you
+choose to update, the installer). To work it reads, locally: your open windows, installed apps, the current media session,
 the wallpaper (only for the "From wallpaper" theme), saved Wi-Fi networks and
 audio devices. Settings are stored in `%APPDATA%\app.iacobar`.
 
@@ -108,6 +117,38 @@ To keep the Windows taskbar visible while developing:
 $env:IACOBAR_KEEP_WINDOWS_TASKBAR = "1"; npm run tauri dev
 ```
 
+### Publishing a release
+
+Releases are signed: the app only installs updates signed with the project's
+private key, and checks
+`https://github.com/IacoM/iacobar/releases/latest/download/latest.json`.
+
+One-time setup: the key pair is made with
+`npx tauri signer generate -w "$HOME\.tauri\iacobar.key"`. The public key is
+in `src-tauri/tauri.conf.json` (`plugins.updater.pubkey`); the private key
+**stays out of the repository**. Keep a copy somewhere safe (a password
+manager): if it is lost, installed copies can no longer be updated and users
+have to reinstall by hand.
+
+For each release:
+
+1. Bump the version in `package.json`, `src-tauri/tauri.conf.json` and
+   `src-tauri/Cargo.toml` (the three must match), and commit.
+2. Build the signed installer and `latest.json`:
+
+   ```powershell
+   powershell -File scripts\release.ps1 -Notes "What's new, shown in the app"
+   ```
+
+   The two files end up in `release\` (ignored by git).
+3. On GitHub, *Releases → Draft a new release*: tag `v<version>` (e.g.
+   `v0.2.0`, it must match: `latest.json` points to that tag), title, notes, and
+   attach **both** `Iacobar_<version>_x64-setup.exe` and `latest.json`.
+   Publish it as the latest release (not a pre-release or a draft, or the
+   updater won't see it).
+4. Within 6 hours every running copy shows the update dot; *Check for updates*
+   in the bar settings checks right away.
+
 ### Project layout
 
 ```
@@ -129,6 +170,7 @@ src-tauri/src/
   wallpaper.rs     wallpaper colours
   vdesk.rs         virtual desktops
   backup.rs        settings backups, export / import
+  updater.rs       update checks and install (GitHub releases)
   config.rs        settings and pinned apps
 src/
   routes/+page.svelte            the bar

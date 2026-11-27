@@ -8,6 +8,7 @@
   import { batteryIcon, ico, logoGlyph, volumeIcon } from "$lib/icons";
   import AppIcon from "$lib/components/AppIcon.svelte";
   import { setSystemAccent } from "$lib/theme";
+  import { initUpdate, update } from "$lib/update.svelte";
   import { getCurrentWebview } from "@tauri-apps/api/webview";
 
   let windows = $state<WinInfo[]>([]);
@@ -61,6 +62,7 @@
   // ---------------------------------------------------------------- data --
 
   onMount(() => {
+    initUpdate();
     const un: Array<Promise<() => void>> = [];
     api.getWindows().then((w) => {
       windows = w;
@@ -683,6 +685,7 @@
       >
         <span class="logo-glow"></span>
         <span class="logo-tile">{@html logoGlyph}</span>
+        {#if update.available}<span class="upd-dot" title="Aggiornamento disponibile"></span>{/if}
       </button>
       <button class="tool" title="Cerca" onclick={(e) => flyout(e, "start", 640, 620, { focusSearch: true })}>
         {@html ico.search}
@@ -1138,6 +1141,20 @@
     margin-right: 2px;
     display: grid;
     place-items: center;
+  }
+  /* a new version is out: small accent dot on Start */
+  .upd-dot {
+    position: absolute;
+    z-index: 1;
+    top: 1px;
+    right: 1px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow:
+      0 0 0 2px var(--bar-bg-solid),
+      0 0 8px var(--accent);
   }
   .logo-glow {
     position: absolute;

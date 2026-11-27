@@ -2,6 +2,7 @@
   import { api, type BackupInfo, type Settings } from "$lib/api";
   import { ico } from "$lib/icons";
   import { onMount } from "svelte";
+  import { checkNow, initUpdate, installNow, update } from "$lib/update.svelte";
   import { ACCENTS, THEMES, loadWallpaperTheme, themeById, type Theme } from "$lib/theme";
 
   let { settings, onBack }: { settings: Settings; onBack?: () => void } = $props();
@@ -119,6 +120,7 @@
   // the "Dallo sfondo" card shows the wallpaper's real colours
   let wallTheme = $state<Theme | null>(null);
   onMount(() => {
+    initUpdate();
     loadWallpaperTheme().then((t) => (wallTheme = t));
   });
   const allThemes = $derived(wallTheme ? [...THEMES, wallTheme] : THEMES);
@@ -234,6 +236,39 @@
         <span class="switch" class:on={settings[o.key]}><i></i></span>
       </button>
     {/each}
+
+    <h4>Aggiornamenti</h4>
+    {#if update.available}
+      <div class="upd">
+        <div class="upd-head">
+          <span class="upd-dot"></span>
+          <span class="txt">
+            <b>Nuova versione {update.available.version}</b>
+            <small>Ora hai la {update.current}</small>
+          </span>
+          <button class="chip-btn accent" disabled={update.installing} onclick={installNow}>
+            {update.installing ? "Scarico…" : "Aggiorna ora"}
+          </button>
+        </div>
+        {#if update.available.notes}<p class="upd-notes">{update.available.notes}</p>{/if}
+        {#if update.installing}
+          <div class="upd-bar" class:indet={update.progress === null}>
+            <i style="width:{(update.progress ?? 0.3) * 100}%"></i>
+          </div>
+        {/if}
+      </div>
+    {:else}
+      <div class="seg-row">
+        <span class="txt">
+          <b>Iacobar {update.current}</b>
+          <small>{update.upToDate ? "È l'ultima versione" : "Si aggiorna da sola quando esce una nuova versione"}</small>
+        </span>
+        <button class="chip-btn" disabled={update.checking} onclick={checkNow}>
+          {update.checking ? "Controllo…" : "Cerca aggiornamenti"}
+        </button>
+      </div>
+    {/if}
+    {#if update.error}<p class="note">{update.error}</p>{/if}
 
     <h4>Backup</h4>
     <div class="backup">
@@ -518,6 +553,72 @@
   .chip-btn.on {
     background: color-mix(in srgb, var(--accent) 18%, var(--card));
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent);
+  }
+  .chip-btn:disabled {
+    opacity: 0.6;
+  }
+  .chip-btn.accent {
+    flex: none;
+    background: var(--accent);
+    color: #0b0b12;
+    font-weight: 600;
+    box-shadow: none;
+  }
+  .chip-btn.accent:hover {
+    background: color-mix(in srgb, var(--accent) 85%, #fff);
+  }
+  /* ---- updates ---- */
+  .upd {
+    margin: 0 10px 8px;
+    padding: 10px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--accent) 12%, var(--card));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+  .upd-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .upd-dot {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .upd-notes {
+    margin: 8px 0 0 18px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--fg-dim);
+    white-space: pre-line;
+  }
+  .upd-bar {
+    margin: 10px 0 2px 18px;
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    background: var(--stroke);
+  }
+  .upd-bar i {
+    display: block;
+    height: 100%;
+    border-radius: 2px;
+    background: var(--accent);
+    transition: width 0.2s;
+  }
+  .upd-bar.indet i {
+    animation: upd-slide 1.1s ease-in-out infinite;
+  }
+  @keyframes upd-slide {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(340%);
+    }
   }
   .copies {
     list-style: none;

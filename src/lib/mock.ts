@@ -189,6 +189,21 @@ export async function invoke<T>(cmd: string, args: Record<string, unknown> = {})
     case "media_action":
       if (args.action === "toggle") playing = !playing;
       return r(undefined);
+    case "update_status":
+    case "check_update":
+      return r({
+        current: "0.2.0",
+        available: { version: "0.3.0", notes: "Nuovo tema, anteprime più veloci e correzioni varie." },
+      });
+    case "install_update": {
+      // fake download, then "fail" so the page stays usable in design mode
+      const total = 6_000_000;
+      for (let done = 0; done <= total; done += 600_000) {
+        window.dispatchEvent(new CustomEvent("mock:update-progress", { detail: { done, total } }));
+        await new Promise((ok) => setTimeout(ok, 150));
+      }
+      throw "modalità design: niente installazione";
+    }
     default:
       console.info("[mock]", cmd, args);
       return r(null);

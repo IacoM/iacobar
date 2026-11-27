@@ -3,6 +3,7 @@
   import { api, type AppEntry, type Settings } from "$lib/api";
   import { ico } from "$lib/icons";
   import AppIcon from "./AppIcon.svelte";
+  import { initUpdate, update } from "$lib/update.svelte";
 
   let { settings, focusSearch = false, onSettings }: {
     settings: Settings;
@@ -19,6 +20,7 @@
   let copied = $state(false);
 
   onMount(async () => {
+    initUpdate();
     apps = await api.listApps();
     await tick();
     input?.focus();
@@ -221,7 +223,14 @@
   <footer>
     <div class="left">
       <button class="icon-btn fbtn" title="Start di Windows" onclick={() => api.shell("start")}>{@html ico.windows}</button>
-      <button class="icon-btn fbtn" title="Impostazioni della barra" onclick={onSettings}>{@html ico.sliders}</button>
+      <button
+        class="icon-btn fbtn"
+        title={update.available ? `Impostazioni della barra (aggiornamento ${update.available.version} disponibile)` : "Impostazioni della barra"}
+        onclick={onSettings}
+      >
+        {@html ico.sliders}
+        {#if update.available}<span class="upd-dot"></span>{/if}
+      </button>
       <button class="icon-btn fbtn" title="Impostazioni di Windows" onclick={() => api.shell("settings")}>{@html ico.gear}</button>
     </div>
     <div class="power" class:open={powerOpen}>
@@ -405,9 +414,20 @@
     gap: 4px;
   }
   .fbtn {
+    position: relative;
     width: 36px;
     height: 36px;
     padding: 9px;
+  }
+  .upd-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 2px var(--bar-bg-solid);
   }
   .pbtn {
     display: flex;

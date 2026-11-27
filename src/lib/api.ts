@@ -159,6 +159,23 @@ export interface ThumbRect {
   h: number;
 }
 
+export interface UpdateInfo {
+  version: string;
+  notes: string;
+}
+
+export interface UpdateStatus {
+  /** version running now */
+  current: string;
+  /** newer version on GitHub, once a check found one */
+  available: UpdateInfo | null;
+}
+
+export interface UpdateProgress {
+  done: number;
+  total: number | null;
+}
+
 export type ShellAction =
   | "start"
   | "search"
@@ -239,6 +256,10 @@ export const api = {
   radioStatus: () => invoke<Radios | null>("radio_status"),
   setRadio: (kind: "wifi" | "bluetooth", on: boolean) => invoke<void>("set_radio", { kind, on }),
   quit: () => invoke<void>("quit_app"),
+  updateStatus: () => invoke<UpdateStatus>("update_status"),
+  checkUpdate: () => invoke<UpdateStatus>("check_update"),
+  /** downloads the update and restarts into it (only returns on failure) */
+  installUpdate: () => invoke<void>("install_update"),
 };
 
 // ---------------------------------------------------------------- icons --
