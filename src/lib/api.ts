@@ -167,6 +167,8 @@ export interface UpdateInfo {
 export interface UpdateStatus {
   /** version running now */
   current: string;
+  /** Microsoft Store build: the Store installs the updates */
+  store: boolean;
   /** newer version on GitHub, once a check found one */
   available: UpdateInfo | null;
 }

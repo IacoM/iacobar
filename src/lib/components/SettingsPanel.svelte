@@ -257,6 +257,13 @@
           </div>
         {/if}
       </div>
+    {:else if update.store}
+      <div class="seg-row">
+        <span class="txt">
+          <b>Iacobar {update.current}</b>
+          <small>Gli aggiornamenti arrivano dal Microsoft Store</small>
+        </span>
+      </div>
     {:else}
       <div class="seg-row">
         <span class="txt">

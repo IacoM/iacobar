@@ -128,35 +128,78 @@ $env:IACOBAR_KEEP_WINDOWS_TASKBAR = "1"; npm run tauri dev
 
 ### Publishing a release
 
-Releases are signed: the app only installs updates signed with the project's
-private key, and checks
-`https://github.com/IacoM/iacobar/releases/latest/download/latest.json`.
-
-One-time setup: the key pair is made with
-`npx tauri signer generate -w "$HOME\.tauri\iacobar.key"`. The public key is
-in `src-tauri/tauri.conf.json` (`plugins.updater.pubkey`); the private key
-**stays out of the repository**. Keep a copy somewhere safe (a password
-manager): if it is lost, installed copies can no longer be updated and users
-have to reinstall by hand.
+Every release goes to two places with one command: **GitHub** (the installer,
+updated by the app itself) and the **Microsoft Store** (an MSIX package,
+updated by the Store). The same `iacobar.exe` is in both: when it runs from the
+Store package it leaves updates to the Store and uses the package's startup
+task for *Start with Windows*.
 
 For each release:
 
 1. Bump the version in `package.json`, `src-tauri/tauri.conf.json` and
-   `src-tauri/Cargo.toml` (the three must match), and commit.
-2. Build the signed installer and `latest.json`:
+   `src-tauri/Cargo.toml` (the three must match), commit and push.
+2. Build and publish:
 
    ```powershell
-   powershell -File scripts\release.ps1 -Notes "What's new, shown in the app"
+   powershell -File scripts\release.ps1 -Notes "What's new, shown in the app" -Publish
    ```
 
-   The two files end up in `release\` (ignored by git).
-3. On GitHub, *Releases → Draft a new release*: tag `v<version>` (e.g.
-   `v0.2.0`, it must match: `latest.json` points to that tag), title, notes, and
-   attach **both** `Iacobar_<version>_x64-setup.exe` and `latest.json`.
-   Publish it as the latest release (not a pre-release or a draft, or the
-   updater won't see it).
-4. Within 6 hours every running copy shows the update dot; *Check for updates*
-   in the bar settings checks right away.
+   It builds the installer, `latest.json` and the MSIX into `release\` (ignored
+   by git), creates the GitHub release `v<version>` with the installer and
+   `latest.json`, and sends the MSIX to the Store. Without `-Publish` it only
+   builds.
+3. GitHub: within 6 hours every running copy shows the update dot (*Check for
+   updates* in the bar settings checks right away). Store: the new version
+   goes through certification (usually 1–3 days), then the Store updates it.
+
+#### One-time setup
+
+**Update signing key.** Made with
+`npx tauri signer generate -w "$HOME\.tauri\iacobar.key"`. The public key is in
+`src-tauri/tauri.conf.json` (`plugins.updater.pubkey`); the private key **stays
+out of the repository**. Keep a copy somewhere safe (a password manager): if it
+is lost, installed copies can no longer be updated and users have to reinstall
+by hand.
+
+**GitHub CLI**, used to create the releases:
+
+```powershell
+winget install GitHub.cli
+gh auth login
+```
+
+**Microsoft Store.**
+
+1. Open a developer account (free for individuals) from
+   [storedeveloper.microsoft.com](https://storedeveloper.microsoft.com).
+2. In [Partner Center](https://partner.microsoft.com/dashboard) →
+   *Apps and games* → *New product* → *MSIX or PWA app*, reserve the name
+   **Iacobar**.
+3. *Product management → Product identity*: copy `Package/Identity/Name`,
+   `Package/Identity/Publisher`, `Package/Properties/PublisherDisplayName` and
+   the *Store ID* into `msix/store.json` (`identityName`, `publisher`,
+   `publisherDisplayName`, `productId`) and commit it. These are public
+   identifiers, not secrets.
+4. Build the MSIX (`scripts\release.ps1` without `-Publish`) and make the
+   **first submission by hand** in Partner Center: free pricing, category
+   *Utilities & tools*, age rating questionnaire, Store listing (description,
+   screenshots from `docs/screenshots`, privacy policy: link to the
+   [Privacy](#privacy) section), upload `release\Iacobar_<version>_x64.msix`.
+   In *Notes for certification* explain that `runFullTrust` is needed because
+   Iacobar is a desktop app that replaces the Windows taskbar (it hides
+   Explorer's taskbar and gives it back when it quits).
+5. Let the script submit later versions: in Partner Center → *Account settings
+   → User management → Microsoft Entra applications*, create an application
+   with the *Manager* role and a key (client secret). Then install the
+   [Microsoft Store Developer CLI](https://learn.microsoft.com/windows/apps/publish/msstore-dev-cli/overview)
+   and connect it once (tenant, seller and client IDs are in Partner Center):
+
+   ```powershell
+   winget install "Microsoft Store Developer CLI"
+   msstore reconfigure --tenantId <tenant> --sellerId <seller> --clientId <client> --clientSecret <secret>
+   ```
+
+   The secret stays in the CLI's settings on this PC, never in the repository.
 
 ### Project layout
 
@@ -180,6 +223,8 @@ src-tauri/src/
   vdesk.rs         virtual desktops
   backup.rs        settings backups, export / import
   updater.rs       update checks and install (GitHub releases)
+  package.rs       Microsoft Store (MSIX) build: detection, startup task
+  session.rs       sign-out, shutdown, Store uninstall: taskbar back first
   config.rs        settings and pinned apps
 src/
   routes/+page.svelte            the bar
@@ -188,6 +233,8 @@ src/
   lib/components/*Panel.svelte   Start, calendar, audio, app menu, settings, tray
   lib/theme.ts                   themes
   lib/mock.ts                    fake data to work on the UI in a browser
+msix/AppxManifest.xml            Microsoft Store package manifest
+scripts/release.ps1              build and publish a release
 ```
 
 ## Notes

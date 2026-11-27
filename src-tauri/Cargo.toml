@@ -64,6 +64,8 @@ features = [
   "Win32_NetworkManagement_WiFi",
   "Win32_NetworkManagement_Ndis",  "Security_Credentials",
   "Win32_Graphics_Imaging",
+  "Win32_Storage_Packaging_Appx",
+  "ApplicationModel",
 ]
 
 [profile.release]

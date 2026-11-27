@@ -6,6 +6,8 @@ import { api, listen, type UpdateInfo, type UpdateProgress } from "./api";
 export const update = $state({
   /** version running now ("" until loaded) */
   current: "",
+  /** Microsoft Store build: no checks here, the Store updates the app */
+  store: false,
   available: null as UpdateInfo | null,
   checking: false,
   /** true once a manual check found nothing */
@@ -24,6 +26,7 @@ export function initUpdate() {
   started = true;
   api.updateStatus().then((s) => {
     update.current = s.current;
+    update.store = s.store;
     update.available = s.available;
   });
   listen<UpdateInfo>("update-available", (u) => {

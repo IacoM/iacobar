@@ -193,6 +193,7 @@ export async function invoke<T>(cmd: string, args: Record<string, unknown> = {})
     case "check_update":
       return r({
         current: "0.2.0",
+        store: new URLSearchParams(location.search).has("store"),
         // `?update`: pretend a new version is out
         available: new URLSearchParams(location.search).has("update")
           ? { version: "0.3.0", notes: "Nuovo tema, anteprime più veloci e correzioni varie." }

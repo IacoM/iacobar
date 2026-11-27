@@ -28,6 +28,8 @@ pub struct UpdateInfo {
 #[derive(Serialize, Clone)]
 pub struct UpdateStatus {
     pub current: String,
+    /// Microsoft Store build: the Store installs updates, not us
+    pub store: bool,
     pub available: Option<UpdateInfo>,
 }
 
@@ -44,12 +46,16 @@ fn info(u: &Update) -> UpdateInfo {
 pub fn status(app: &AppHandle) -> UpdateStatus {
     UpdateStatus {
         current: app.package_info().version.to_string(),
+        store: crate::package::is_store(),
         available: PENDING.lock().unwrap().as_ref().map(info),
     }
 }
 
 /// Asks GitHub for a newer version; remembers it and tells the windows.
 pub async fn check(app: &AppHandle) -> Result<UpdateStatus, String> {
+    if crate::package::is_store() {
+        return Ok(status(app));
+    }
     let updater = app
         .updater_builder()
         .on_before_exit(crate::cleanup) // the installer closes us: taskbar back first
@@ -88,8 +94,8 @@ pub async fn install(app: &AppHandle) -> Result<(), String> {
 }
 
 pub fn start(app: AppHandle) {
-    if cfg!(debug_assertions) {
-        return; // `tauri dev`: no update checks against the released app
+    if cfg!(debug_assertions) || crate::package::is_store() {
+        return; // `tauri dev`, or the Store does the updating
     }
     std::thread::spawn(move || {
         std::thread::sleep(FIRST_CHECK);

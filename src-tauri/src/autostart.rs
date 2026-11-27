@@ -1,5 +1,6 @@
 //! Start with Windows: a value under HKCU\...\Run pointing to our exe.
 //! Only release builds register themselves (never the dev binary).
+//! The Microsoft Store build uses its package's startup task instead.
 
 use windows::Win32::System::Registry::{HKEY_CURRENT_USER, REG_SZ, RegDeleteKeyValueW, RegGetValueW, RRF_RT_REG_SZ, RegSetKeyValueW};
 use windows::core::{PCWSTR, w};
@@ -40,6 +41,10 @@ pub fn remove() {
 /// Makes the registry match the user's setting.
 pub fn apply(enabled: bool) {
     if cfg!(debug_assertions) {
+        return;
+    }
+    if crate::package::is_store() {
+        crate::package::apply_autostart(enabled);
         return;
     }
     let Ok(exe) = std::env::current_exe() else { return };

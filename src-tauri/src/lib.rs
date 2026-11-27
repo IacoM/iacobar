@@ -7,9 +7,11 @@ mod config;
 mod icons;
 mod jumplist;
 mod media;
+mod package;
 mod mixer;
 mod preview;
 mod radios;
+mod session;
 mod system;
 mod taskbar;
 mod tray;
@@ -41,6 +43,7 @@ pub(crate) fn cleanup() {
 }
 
 fn install_safety_nets() {
+    session::start(); // sign-out, shutdown, Store uninstall
     let prev = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
         // %TEMP%\iacobar-crash.txt: what went wrong, for support
