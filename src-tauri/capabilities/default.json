@@ -1,0 +1,13 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Bars, flyout and preview windows",
+  "windows": [
+    "bar-*",
+    "flyout",
+    "preview"
+  ],
+  "permissions": [
+    "core:default"
+  ]
+}

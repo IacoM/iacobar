@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#22243c"/>
+      <stop offset="1" stop-color="#0b0c16"/>
+    </linearGradient>
+    <radialGradient id="sheen" cx=".3" cy=".05" r=".75">
+      <stop offset="0" stop-color="#8b5cff" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#8b5cff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="dock" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a3c5e"/>
+      <stop offset="1" stop-color="#25263d"/>
+    </linearGradient>
+    <linearGradient id="main" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9b6bff"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="left" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5eead4"/>
+      <stop offset="1" stop-color="#14b8a6"/>
+    </linearGradient>
+    <linearGradient id="right" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff8ad8"/>
+      <stop offset="1" stop-color="#e5469c"/>
+    </linearGradient>
+    <linearGradient id="ind" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="1" stop-color="#9b6bff"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#9b6bff" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#9b6bff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="22" stdDeviation="22" flood-color="#000" flood-opacity=".55"/>
+    </filter>
+  </defs>
+
+  <!-- tile -->
+  <rect x="32" y="32" width="960" height="960" rx="236" fill="url(#bg)"/>
+  <rect x="32" y="32" width="960" height="960" rx="236" fill="url(#sheen)"/>
+
+  <g transform="translate(0 -64)">
+  <!-- dock -->
+  <rect x="118" y="560" width="788" height="232" rx="116" fill="url(#dock)"/>
+  <rect x="118" y="560" width="788" height="232" rx="116" fill="none" stroke="#ffffff" stroke-opacity=".12" stroke-width="6"/>
+
+  <!-- side apps -->
+  <rect x="192" y="604" width="148" height="148" rx="44" fill="url(#left)"/>
+  <rect x="684" y="604" width="148" height="148" rx="44" fill="url(#right)"/>
+
+  <!-- active app: bigger, raised, glowing -->
+  <ellipse cx="512" cy="560" rx="230" ry="130" fill="url(#glow)"/>
+  <rect x="392" y="372" width="240" height="240" rx="70" fill="url(#main)" filter="url(#shadow)"/>
+  <rect x="392" y="372" width="240" height="240" rx="70" fill="none" stroke="#ffffff" stroke-opacity=".25" stroke-width="6"/>
+  <ellipse cx="470" cy="430" rx="60" ry="26" fill="#ffffff" opacity=".22"/>
+
+  <!-- active indicator -->
+  <rect x="446" y="712" width="132" height="30" rx="15" fill="url(#ind)"/>
+  </g>
+</svg>
